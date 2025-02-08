@@ -52,7 +52,7 @@ const Login: React.FC = () => {
           onClick={handleGoogleSignIn}
         >
           <img
-            src="/google-icon.svg"
+            src="../assets/google-icon.svg"
             alt="Google Icon"
             style={{ height: "20px", marginRight: "10px" }}
           />

@@ -61,7 +61,7 @@ const SignUp: React.FC = () => {
           onClick={handleGoogleSignUp}
         >
           <img
-            src="/google-icon.svg"
+            src="../assets/google-icon.png" 
             alt="Google Icon"
             style={{ height: "20px", marginRight: "10px" }}
           />
