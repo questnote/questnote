@@ -1,12 +1,50 @@
-// src/pages/SignUp.tsx
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { auth } from "../firebase/firebase"; // Adjust path based on your directory
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 const SignUp: React.FC = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const navigate = useNavigate();
+
+  // Handle email/password sign-up
+  const handleSignUp = async () => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log("User created:", userCredential.user);
+      alert("Account created successfully!");
+      navigate("/"); // Redirect to home or chat page
+    } catch (error: any) {
+      setErrorMessage(error.message);
+    }
+  };
+
+  // Handle Google sign-up
+  const handleGoogleSignUp = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      console.log("Google sign-in successful:", result.user);
+      alert("Signed in with Google!");
+      navigate("/"); // Redirect to home or chat page
+    } catch (error: any) {
+      setErrorMessage(error.message);
+    }
+  };
 
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100 bg-light">
@@ -20,6 +58,7 @@ const SignUp: React.FC = () => {
         {/* Google Sign-Up */}
         <button
           className="btn btn-light border w-100 mb-3 d-flex align-items-center justify-content-center"
+          onClick={handleGoogleSignUp}
         >
           <img
             src="/google-icon.svg"
@@ -70,21 +109,20 @@ const SignUp: React.FC = () => {
           </button>
         </div>
 
-        {/* CAPTCHA Placeholder */}
-        <div className="mb-3 text-center">
-          <div className="p-2 border rounded bg-light">Cloudflare CAPTCHA Placeholder</div>
-        </div>
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="alert alert-danger text-center py-1">{errorMessage}</div>
+        )}
 
         {/* Buttons */}
         <div className="d-flex justify-content-between">
           <button
             className="btn btn-light border"
+            onClick={() => navigate("/")} // Adjust navigation path if needed
           >
             Back to Home
           </button>
-          <button
-            className="btn btn-dark"
-          >
+          <button className="btn btn-dark" onClick={handleSignUp}>
             Sign Up
           </button>
         </div>
@@ -92,7 +130,10 @@ const SignUp: React.FC = () => {
         {/* Log In Redirect */}
         <div className="text-center mt-3">
           <small>
-            Already have an account? <span className="text-primary" style={{ cursor: "pointer" }}><a href="/signin"> Log In </a></span>
+            Already have an account?{" "}
+            <span className="text-primary" style={{ cursor: "pointer" }}>
+              <a href="/signin"> Log In </a>
+            </span>
           </small>
         </div>
       </div>
@@ -102,6 +143,116 @@ const SignUp: React.FC = () => {
 
 export default SignUp;
 
+
+// // src/pages/SignUp.tsx
+// import React, { useState } from "react";
+// import "bootstrap/dist/css/bootstrap.min.css";
+
+// const SignUp: React.FC = () => {
+//   const [name, setName] = useState("");
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [showPassword, setShowPassword] = useState(false);
+
+//   return (
+//     <div className="container d-flex justify-content-center align-items-center vh-100 bg-light">
+//       <div className="card p-4 shadow-lg" style={{ width: "25rem", borderRadius: "12px" }}>
+//         <div className="text-center mb-3">
+//           <img src="/paper-plane-icon.png" alt="Paper Plane" style={{ height: "50px" }} />
+//         </div>
+//         <h4 className="text-center fw-bold">Sign Up</h4>
+//         <p className="text-center text-muted">Welcome to QuestNote! Sign up to get started.</p>
+
+//         {/* Google Sign-Up */}
+//         <button
+//           className="btn btn-light border w-100 mb-3 d-flex align-items-center justify-content-center"
+//         >
+//           <img
+//             src="/google-icon.svg"
+//             alt="Google Icon"
+//             style={{ height: "20px", marginRight: "10px" }}
+//           />
+//           Sign Up with Google
+//         </button>
+
+//         <div className="text-center my-2 text-muted">or create an account</div>
+
+//         {/* Name Field */}
+//         <div className="mb-3">
+//           <input
+//             type="text"
+//             className="form-control"
+//             placeholder="Name"
+//             value={name}
+//             onChange={(e) => setName(e.target.value)}
+//           />
+//         </div>
+
+//         {/* Email Field */}
+//         <div className="mb-3">
+//           <input
+//             type="email"
+//             className="form-control"
+//             placeholder="Email"
+//             value={email}
+//             onChange={(e) => setEmail(e.target.value)}
+//           />
+//         </div>
+
+//         {/* Password Field */}
+//         <div className="mb-3 input-group">
+//           <input
+//             type={showPassword ? "text" : "password"}
+//             className="form-control"
+//             placeholder="Password"
+//             value={password}
+//             onChange={(e) => setPassword(e.target.value)}
+//           />
+//           <button
+//             className="btn btn-outline-secondary"
+//             onClick={() => setShowPassword(!showPassword)}
+//           >
+//             {showPassword ? "🙈" : "👁️"}
+//           </button>
+//         </div>
+
+//         {/* CAPTCHA Placeholder */}
+//         <div className="mb-3 text-center">
+//           <div className="p-2 border rounded bg-light">Cloudflare CAPTCHA Placeholder</div>
+//         </div>
+
+//         {/* Buttons */}
+//         <div className="d-flex justify-content-between">
+//           <button
+//             className="btn btn-light border"
+//           >
+//             Back to Home
+//           </button>
+//           <button
+//             className="btn btn-dark"
+//           >
+//             Sign Up
+//           </button>
+//         </div>
+
+//         {/* Log In Redirect */}
+//         <div className="text-center mt-3">
+//           <small>
+//             Already have an account? <span className="text-primary" style={{ cursor: "pointer" }}><a href="/signin"> Log In </a></span>
+//           </small>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default SignUp;
+
+
+
+
+
+// with blue buttons 
 
 // import React from "react";
 // import "bootstrap/dist/css/bootstrap.min.css";
