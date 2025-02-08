@@ -5,8 +5,14 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  updateProfile,
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+
+// Import images properly
+import penIcon from "../assets/pen-icon.png";
+import googleIcon from "../assets/google-icon.png";
 
 const SignUp: React.FC = () => {
   const [name, setName] = useState("");
@@ -16,20 +22,31 @@ const SignUp: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const db = getFirestore();
 
   // Handle email/password sign-up
   const handleSignUp = async () => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
+      if (!name.trim()) {
+        throw new Error("Please enter your name.");
+      }
+
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Update Firebase Auth profile with name
+      await updateProfile(user, { displayName: name });
+
+      // Store user info in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        name,
         email,
-        password
-      );
-      console.log("User created:", userCredential.user);
+      });
+
       alert("Account created successfully!");
       navigate("/"); // Redirect to home or chat page
     } catch (error: any) {
-      setErrorMessage(error.message);
+      handleAuthError(error);
     }
   };
 
@@ -38,19 +55,46 @@ const SignUp: React.FC = () => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      console.log("Google sign-in successful:", result.user);
+      const user = result.user;
+
+      // Check if user already exists in Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, "users", user.uid), {
+          name: user.displayName || "Google User",
+          email: user.email,
+        });
+      }
+
       alert("Signed in with Google!");
       navigate("/"); // Redirect to home or chat page
     } catch (error: any) {
-      setErrorMessage(error.message);
+      handleAuthError(error);
     }
+  };
+
+  // Function to handle authentication errors
+  const handleAuthError = (error: any) => {
+    let errorMsg = "An error occurred. Please try again.";
+
+    if (error.code === "auth/email-already-in-use") {
+      errorMsg = "This email is already in use.";
+    } else if (error.code === "auth/weak-password") {
+      errorMsg = "Password should be at least 6 characters.";
+    } else if (error.code === "auth/invalid-email") {
+      errorMsg = "Please enter a valid email address.";
+    } else if (error.message) {
+      errorMsg = error.message;
+    }
+
+    setErrorMessage(errorMsg);
   };
 
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100 bg-light">
       <div className="card p-4 shadow-lg" style={{ width: "25rem", borderRadius: "12px" }}>
         <div className="text-center mb-3">
-          <img src="../assets/pen-icon.png" alt="" style={{ height: "50px" }} />
+          <img src={penIcon} alt="Pen Icon" style={{ height: "50px" }} />
         </div>
         <h4 className="text-center fw-bold">Sign Up</h4>
         <p className="text-center text-muted">Welcome to QuestNote! Sign up to get started.</p>
@@ -60,11 +104,7 @@ const SignUp: React.FC = () => {
           className="btn btn-light border w-100 mb-3 d-flex align-items-center justify-content-center"
           onClick={handleGoogleSignUp}
         >
-          <img
-            src="../assets/google-icon.png" 
-            alt="Google Icon"
-            style={{ height: "20px", marginRight: "10px" }}
-          />
+          <img src={googleIcon} alt="Google Icon" style={{ height: "20px", marginRight: "10px" }} />
           Sign Up with Google
         </button>
 
@@ -142,6 +182,7 @@ const SignUp: React.FC = () => {
 };
 
 export default SignUp;
+
 
 
 // // src/pages/SignUp.tsx

@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import SignIn from "./pages/SingIn";
 import SignUp from "./pages/SignUp";
-import ChatPage from "./pages/ChatPage";
+// import ChatPage from "./pages/ChatPage";
+import ChatApp from "./components/ChatApp";
 
 const PrivateRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -36,7 +37,7 @@ const App: React.FC = () => {
           path="/"
           element={
             <PrivateRoute>
-              <ChatPage />
+              <ChatApp />
             </PrivateRoute>
           }
         />
