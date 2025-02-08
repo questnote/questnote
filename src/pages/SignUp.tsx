@@ -50,7 +50,7 @@ const SignUp: React.FC = () => {
     <div className="container d-flex justify-content-center align-items-center vh-100 bg-light">
       <div className="card p-4 shadow-lg" style={{ width: "25rem", borderRadius: "12px" }}>
         <div className="text-center mb-3">
-          <img src="/paper-plane-icon.png" alt="Paper Plane" style={{ height: "50px" }} />
+          <img src="../assets/pen-icon.png" alt="" style={{ height: "50px" }} />
         </div>
         <h4 className="text-center fw-bold">Sign Up</h4>
         <p className="text-center text-muted">Welcome to QuestNote! Sign up to get started.</p>
