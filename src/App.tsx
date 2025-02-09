@@ -6,7 +6,6 @@ import SignIn from "./pages/SingIn";
 import SignUp from "./pages/SignUp";
 // import ChatPage from "./pages/ChatPage";
 import ChatApp from "./components/ChatApp";
-import Sidebar from "./components/Sidebar";
 
 const PrivateRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -34,7 +33,6 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/sidebar" element={<Sidebar />} />
         <Route
           path="/"
           element={
