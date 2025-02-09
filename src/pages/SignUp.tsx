@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { auth } from "../firebase/firebase"; // Adjust path based on your directory
+import { auth, db } from "../firebase/firebase"; // Ensure db is properly exported
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
@@ -8,9 +8,9 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
-// Import images properly
+// Import images correctly
 import penIcon from "../assets/pen-icon.png";
 import googleIcon from "../assets/google-icon.png";
 
@@ -22,29 +22,33 @@ const SignUp: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const navigate = useNavigate();
-  const db = getFirestore();
+
+  // Store user data in Firestore
+  const saveUserToFirestore = async (userId: string, name: string, email: string) => {
+    try {
+      await setDoc(doc(db, "users", userId), { name, email });
+    } catch (error) {
+      console.error("Error saving user to Firestore:", error);
+      setErrorMessage("Could not save user data. Please try again.");
+    }
+  };
 
   // Handle email/password sign-up
   const handleSignUp = async () => {
     try {
-      if (!name.trim()) {
-        throw new Error("Please enter your name.");
-      }
+      if (!name.trim()) throw new Error("Please enter your name.");
+      if (!email.trim()) throw new Error("Please enter a valid email.");
+      if (password.length < 6) throw new Error("Password must be at least 6 characters long.");
 
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Update Firebase Auth profile with name
       await updateProfile(user, { displayName: name });
 
-      // Store user info in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        name,
-        email,
-      });
+      await saveUserToFirestore(user.uid, name, email);
 
       alert("Account created successfully!");
-      navigate("/"); // Redirect to home or chat page
+      navigate("/"); // Redirect to chat page
     } catch (error: any) {
       handleAuthError(error);
     }
@@ -57,17 +61,13 @@ const SignUp: React.FC = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Check if user already exists in Firestore
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (!userDoc.exists()) {
-        await setDoc(doc(db, "users", user.uid), {
-          name: user.displayName || "Google User",
-          email: user.email,
-        });
+        await saveUserToFirestore(user.uid, user.displayName || "Google User", user.email || "");
       }
 
       alert("Signed in with Google!");
-      navigate("/"); // Redirect to home or chat page
+      navigate("/"); // Redirect to chat page
     } catch (error: any) {
       handleAuthError(error);
     }
@@ -76,16 +76,10 @@ const SignUp: React.FC = () => {
   // Function to handle authentication errors
   const handleAuthError = (error: any) => {
     let errorMsg = "An error occurred. Please try again.";
-
-    if (error.code === "auth/email-already-in-use") {
-      errorMsg = "This email is already in use.";
-    } else if (error.code === "auth/weak-password") {
-      errorMsg = "Password should be at least 6 characters.";
-    } else if (error.code === "auth/invalid-email") {
-      errorMsg = "Please enter a valid email address.";
-    } else if (error.message) {
-      errorMsg = error.message;
-    }
+    if (error.code === "auth/email-already-in-use") errorMsg = "This email is already in use.";
+    else if (error.code === "auth/weak-password") errorMsg = "Password should be at least 6 characters.";
+    else if (error.code === "auth/invalid-email") errorMsg = "Please enter a valid email address.";
+    else if (error.message) errorMsg = error.message;
 
     setErrorMessage(errorMsg);
   };
@@ -115,7 +109,7 @@ const SignUp: React.FC = () => {
           <input
             type="text"
             className="form-control"
-            placeholder="Name"
+            placeholder="Full Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -126,7 +120,7 @@ const SignUp: React.FC = () => {
           <input
             type="email"
             className="form-control"
-            placeholder="Email"
+            placeholder="Email Address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -141,39 +135,26 @@ const SignUp: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button
-            className="btn btn-outline-secondary"
-            onClick={() => setShowPassword(!showPassword)}
-          >
+          <button className="btn btn-outline-secondary" onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? "🙈" : "👁️"}
           </button>
         </div>
 
         {/* Error Message */}
-        {errorMessage && (
-          <div className="alert alert-danger text-center py-1">{errorMessage}</div>
-        )}
+        {errorMessage && <div className="alert alert-danger text-center py-1">{errorMessage}</div>}
 
-        {/* Buttons */}
-        <div className="d-flex justify-content-between">
-          <button
-            className="btn btn-light border"
-            onClick={() => navigate("/")} // Adjust navigation path if needed
-          >
-            Back to Home
-          </button>
-          <button className="btn btn-dark" onClick={handleSignUp}>
-            Sign Up
-          </button>
-        </div>
+        {/* Sign Up Button */}
+        <button className="btn btn-dark w-100" onClick={handleSignUp}>
+          Sign Up
+        </button>
 
         {/* Log In Redirect */}
         <div className="text-center mt-3">
           <small>
             Already have an account?{" "}
-            <span className="text-primary" style={{ cursor: "pointer" }}>
-              <a href="/signin"> Log In </a>
-            </span>
+            <a href="/signin" className="text-primary" style={{ textDecoration: "none" }}>
+              Log In
+            </a>
           </small>
         </div>
       </div>
@@ -182,6 +163,7 @@ const SignUp: React.FC = () => {
 };
 
 export default SignUp;
+
 
 
 
@@ -292,115 +274,3 @@ export default SignUp;
 
 
 
-
-// with blue buttons 
-
-// import React from "react";
-// import "bootstrap/dist/css/bootstrap.min.css";
-
-// const SignUp = () => {
-//   return (
-//     <div
-//       style={{
-//         display: "flex",
-//         justifyContent: "center",
-//         alignItems: "center",
-//         height: "100vh",
-//         backgroundColor: "#ffffff", // Plain white background for simplicity
-//       }}
-//     >
-//       <div
-//         style={{
-//           textAlign: "center",
-//           maxWidth: "400px",
-//           width: "100%",
-//           backgroundColor: "#fff",
-//           padding: "30px",
-//           borderRadius: "10px",
-//           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-//         }}
-//       >
-//         <img
-//           src="/assets/paper-plane-icon.png"
-//           alt="Paper Plane"
-//           style={{ width: "50px", marginBottom: "20px" }}
-//         />
-//         <h3 style={{ fontWeight: "bold", marginBottom: "10px" }}>Sign Up</h3>
-//         <p style={{ color: "#6c757d", marginBottom: "20px" }}>
-//           Welcome to QuestNote! Sign up to get started.
-//         </p>
-
-//         <button
-//           className="btn btn-outline-dark w-100 d-flex align-items-center justify-content-center mb-3"
-//         >
-//           <img
-//             src="/assets/google-icon.svg"
-//             alt="Google Icon"
-//             style={{ width: "20px", marginRight: "10px" }}
-//           />
-//           Sign Up with Google
-//         </button>
-
-//         <div style={{ marginBottom: "15px", color: "#6c757d" }}>
-//           or create an account
-//         </div>
-
-//         <form>
-//           <div className="mb-3">
-//             <input
-//               type="text"
-//               placeholder="Name"
-//               className="form-control"
-//               style={{
-//                 border: "1px solid #dee2e6",
-//                 borderRadius: "5px",
-//                 padding: "10px",
-//               }}
-//             />
-//           </div>
-//           <div className="mb-3">
-//             <input
-//               type="email"
-//               placeholder="Email"
-//               className="form-control"
-//               style={{
-//                 border: "1px solid #dee2e6",
-//                 borderRadius: "5px",
-//                 padding: "10px",
-//               }}
-//             />
-//           </div>
-//           <div className="mb-3">
-//             <input
-//               type="password"
-//               placeholder="Password"
-//               className="form-control"
-//               style={{
-//                 border: "1px solid #dee2e6",
-//                 borderRadius: "5px",
-//                 padding: "10px",
-//               }}
-//             />
-//           </div>
-//           <button className="btn btn-dark w-100" type="submit">
-//             Sign Up
-//           </button>
-//         </form>
-
-//         <div
-//           style={{
-//             marginTop: "15px",
-//             fontSize: "14px",
-//           }}
-//         >
-//           Already have an account?{" "}
-//           <a href="/signin" style={{ color: "#007bff", textDecoration: "none" }}>
-//             Log In
-//           </a>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default SignUp;
