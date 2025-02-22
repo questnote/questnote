@@ -40,7 +40,7 @@ const ChatApp = () => {
     if (inputMessage.trim() === "") return;
 
     const userMessage = { sender: "user", text: inputMessage };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    // setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInputMessage("");
 
     // Simulate generating response
@@ -50,7 +50,7 @@ const ChatApp = () => {
         sender: "bot",
         text: `Response to: ${userMessage.text}`,
       };
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
+      // setMessages((prevMessages) => [...prevMessages, botMessage]);
       setIsGenerating(false);
     }, 2000);
   };
@@ -121,11 +121,11 @@ const ChatApp = () => {
               <h2 className="fw-bold text-primary">Hi, {userName}</h2>
             </div>
 
-            {messages.map((message, index) => (
+            {/* {messages.map((message, index) => (
               <div
                 key={index}
                 className={`d-flex mb-2 ${
-                  message.sender === "user" ? "justify-content-end" : "justify-content-start"
+                  // message.sender === "user" ? "justify-content-end" : "justify-content-start"
                 }`}
               >
                 <div
@@ -137,7 +137,7 @@ const ChatApp = () => {
                   {message.text}
                 </div>
               </div>
-            ))}
+            ))} */}
             {isGenerating && (
               <div className="d-flex justify-content-start mb-2">
                 <div className="p-2 rounded shadow-sm bg-light text-dark" style={{ maxWidth: "70%", border: "1px solid #ccc" }}>
