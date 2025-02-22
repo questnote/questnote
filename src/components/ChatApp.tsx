@@ -9,14 +9,13 @@ import {
   ListGroup,
   FormControl,
   InputGroup,
-  Card,
 } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const ChatApp = () => {
   const [showSidebar, setShowSidebar] = useState(true);
   const [userName, setUserName] = useState("User");
-  const [messages, setMessages] = useState([]);
+  // const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const auth = getAuth();
@@ -39,20 +38,20 @@ const ChatApp = () => {
   const handleSendMessage = async () => {
     if (inputMessage.trim() === "") return;
 
-    const userMessage = { sender: "user", text: inputMessage };
+    // const userMessage = { sender: "user", text: inputMessage };
     // setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInputMessage("");
 
     // Simulate generating response
     setIsGenerating(true);
-    setTimeout(() => {
-      const botMessage = {
-        sender: "bot",
-        text: `Response to: ${userMessage.text}`,
-      };
-      // setMessages((prevMessages) => [...prevMessages, botMessage]);
-      setIsGenerating(false);
-    }, 2000);
+    // setTimeout(() => {
+    //   const botMessage = {
+    //     sender: "bot",
+    //     text: `Response to: ${userMessage.text}`,
+    //   };
+    //   // setMessages((prevMessages) => [...prevMessages, botMessage]);
+    //   setIsGenerating(false);
+    // }, 2000);
   };
 
   return (
